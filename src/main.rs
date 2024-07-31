@@ -23,7 +23,18 @@ struct Player {
     position: Point,
     sprite: Rect,
     speed: i32,
-    direction: Direction
+    direction: Direction,
+    current_frame: i32,
+}
+
+fn direction_spreadsheet_row(direction: Direction) -> i32 {
+    use self::Direction::*;
+    match direction {
+        Up => 3,
+        Down => 0,
+        Left => 1,
+        Right => 2
+    }
 }
 
 fn render(
@@ -36,10 +47,18 @@ fn render(
         canvas.clear();
 
         let (width, height) = canvas.output_size()?;
+
+        let (frame_width, frame_height) = player.sprite.size();
+        let current_frame = Rect::new(
+            player.sprite.x() + frame_width as i32 * player.current_frame,
+            player.sprite.y() + frame_height as i32 * direction_spreadsheet_row(player.direction),
+            frame_width,
+            frame_height
+        );
         
         let screen_position = player.position + Point::new(width as i32 / 2, height as i32 / 2);
-        let screen_rect = Rect::from_center(screen_position, player.sprite.width(), player.sprite.height());
-        canvas.copy(texture, player.sprite, screen_rect)?;
+        let screen_rect = Rect::from_center(screen_position, frame_width, frame_height);
+        canvas.copy(texture, current_frame, screen_rect)?;
 
         canvas.present();
         Ok(())
@@ -60,6 +79,10 @@ fn update_player(player: &mut Player) {
         Direction::Right => {
             player.position = player.position.offset(player.speed, 0);
         },
+    }
+
+    if player.speed != 0 {
+        player.current_frame  = (player.current_frame + 1) % 3;
     }
 }
 
@@ -87,6 +110,7 @@ fn main() -> Result<(), String> {
         sprite: Rect::new(0,0, 26, 36),
         speed: 0,
         direction: Direction::Right,
+        current_frame: 0,
     };
 
     let mut event_pump = sdl_context.event_pump()?;
@@ -136,7 +160,7 @@ fn main() -> Result<(), String> {
 
 
         // Time management
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
 
     }
 
