@@ -1,4 +1,6 @@
 mod components;
+mod physics;
+mod animator;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -10,7 +12,6 @@ use std::time::Duration;
 
 use specs::prelude::*;
 use specs::storage::VecStorage;
-use specs_derive::Component;
 
 use crate::components::*;
 
@@ -78,33 +79,10 @@ fn render(
         Ok(())
 }
 
-
-fn update_player(player: &mut Player) {
-    match player.direction {
-        Direction::Down => {
-            player.position = player.position.offset(0, player.speed);
-        },
-        Direction::Up => {
-            player.position = player.position.offset(0, -player.speed);
-        },
-        Direction::Left => {
-            player.position = player.position.offset(-player.speed, 0);
-        },
-        Direction::Right => {
-            player.position = player.position.offset(player.speed, 0);
-        },
-    }
-
-    if player.speed != 0 {
-        player.current_frame  = (player.current_frame + 1) % 3;
-    }
-}
-
 fn main() -> Result<(), String> {
+
     let sdl_context = sdl2::init()?;
-
     let video_subsystem = sdl_context.video()?;
-
     let _image_context = image::init(InitFlag::PNG | InitFlag::JPG);
 
     let window = video_subsystem.window("game tutorial", 800, 600)
@@ -185,7 +163,6 @@ fn main() -> Result<(), String> {
 
         // Render
         render(&mut canvas, Color::RGB(i, 64, 255 - i), &texture, &player)?;
-
 
         // Time management
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
