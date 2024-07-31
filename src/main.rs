@@ -1,3 +1,5 @@
+mod components;
+
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -10,56 +12,9 @@ use specs::prelude::*;
 use specs::storage::VecStorage;
 use specs_derive::Component;
 
+use crate::components::*;
+
 const PLAYER_MOVEMENT_SPEED: i32 = 20;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-struct Position(Point);
-impl Component for Position {
-    type Storage = VecStorage<self>;
-}
-
-struct Velocity {
-    speed: i32,
-    direction: Direction,
-}
-impl Component for Velocity {
-    type Storage = VecStorage<self>;
-}
-
-struct Sprite {
-    spritesheet: usize,
-    region: Rect,
-}
-impl Component for Sprite {
-    type Storage = VecStorage<self>;
-}
-
-struct MovementAnimation {
-    current_frame: usize,
-    up_frames: Vec<Sprite>,
-    down_frames: Vec<Sprite>,
-    left_frames: Vec<Sprite>,
-    right_frames: Vec<Sprite>,
-}
-impl Component for MovementAnimation {
-    type Storage = VecStorage<self>;
-}
-
-#[derive(Debug)]
-struct Player {
-    position: Point,
-    sprite: Rect,
-    speed: i32,
-    direction: Direction,
-    current_frame: i32,
-}
 
 fn direction_spreadsheet_row(direction: Direction) -> i32 {
     use self::Direction::*;
@@ -69,6 +24,31 @@ fn direction_spreadsheet_row(direction: Direction) -> i32 {
         Left => 1,
         Right => 2
     }
+}
+
+fn character_animation_frames(
+                spritesheet: usize, 
+                top_left_frame: Rect, 
+                direction: Direction) -> Vec<Sprite> {
+
+        
+        let (frame_width, frame_height) = top_left_frame.size();
+        let y_offset = top_left_frame.y() + frame_height as i32 * direction_spreadsheet_row(direction);
+
+        let mut frames = Vec::new();
+        for i in 0..3 {
+            frames.push(Sprite {
+                spritesheet,
+                region: Rect::new(
+                    top_left_frame.x() + frame_width as i32 * i,
+                    y_offset,
+                    frame_width,
+                    frame_height
+                )
+            })
+        }
+
+        frames
 }
 
 fn render(
@@ -137,16 +117,30 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
 
     let texture_creator = canvas.texture_creator();
-    let texture = texture_creator.load_texture("assets/bardo.png")?;
-    
-    let mut player = Player {
-        position: Point::new(0,0),
-        sprite: Rect::new(0,0, 26, 36),
-        speed: 0,
-        direction: Direction::Right,
+    let textures = [
+        texture_creator.load_texture("assets/bardo.png")?,
+    ];
+
+    let player_spritesheet = 0;
+    let player_top_left_frame = Rect::new(0,0,26,36);
+
+    let player_animation = MovementAnimation {
         current_frame: 0,
+        up_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Up),
+        down_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Down),
+        left_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Left),
+        right_frames: character_animation_frames(player_spritesheet, player_top_left_frame, Direction::Right),
     };
 
+    let mut world = World::new();
+
+    world.create_entity()
+        .with(Position(Point::new(0, 0)))
+        .with(Velocity {speed: 0, direction: Direction::Right})
+        .with(player_animation.right_frames[0].clone())
+        .with(player_animation)
+        .build();
+    
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
 
