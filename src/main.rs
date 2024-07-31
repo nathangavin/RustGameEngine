@@ -8,6 +8,8 @@ use std::time::Duration;
 
 const PLAYER_MOVEMENT_SPEED: i32 = 20;
 
+// https://sunjay.dev/learn-game-dev/single-animation.html 
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
     Up,
