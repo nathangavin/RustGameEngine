@@ -6,9 +6,11 @@ use sdl2::rect::{Point, Rect};
 use sdl2::image::{self, LoadTexture, InitFlag};
 use std::time::Duration;
 
-const PLAYER_MOVEMENT_SPEED: i32 = 20;
+use specs::prelude::*;
+use specs::storage::VecStorage;
+use specs_derive::Component;
 
-// https://sunjay.dev/learn-game-dev/single-animation.html 
+const PLAYER_MOVEMENT_SPEED: i32 = 20;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
@@ -16,6 +18,38 @@ enum Direction {
     Down,
     Left,
     Right,
+}
+
+struct Position(Point);
+impl Component for Position {
+    type Storage = VecStorage<self>;
+}
+
+struct Velocity {
+    speed: i32,
+    direction: Direction,
+}
+impl Component for Velocity {
+    type Storage = VecStorage<self>;
+}
+
+struct Sprite {
+    spritesheet: usize,
+    region: Rect,
+}
+impl Component for Sprite {
+    type Storage = VecStorage<self>;
+}
+
+struct MovementAnimation {
+    current_frame: usize,
+    up_frames: Vec<Sprite>,
+    down_frames: Vec<Sprite>,
+    left_frames: Vec<Sprite>,
+    right_frames: Vec<Sprite>,
+}
+impl Component for MovementAnimation {
+    type Storage = VecStorage<self>;
 }
 
 #[derive(Debug)]
