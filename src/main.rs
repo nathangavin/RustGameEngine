@@ -9,7 +9,8 @@ use std::time::Duration;
 #[derive(Debug)]
 struct Player {
     position: Point,
-    sprite: Rect
+    sprite: Rect,
+    speed: i32,
 }
 
 fn render(
@@ -50,9 +51,10 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
     let texture = texture_creator.load_texture("assets/bardo.png")?;
     
-    let player = Player {
+    let mut player = Player {
         position: Point::new(0,0),
-        sprite: Rect::new(0,0, 26, 36)
+        sprite: Rect::new(0,0, 26, 36),
+        speed: 5,
     };
 
     let mut event_pump = sdl_context.event_pump()?;
@@ -66,6 +68,18 @@ fn main() -> Result<(), String> {
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), ..} => {
                     break 'running;
+                },
+                Event::KeyDown { keycode: Some(Keycode::Left), ..} => {
+                    player.position = player.position.offset(-player.speed, 0);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Right), ..} => {
+                    player.position = player.position.offset(player.speed, 0);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Up), ..} => {
+                    player.position = player.position.offset(0, -player.speed);
+                },
+                Event::KeyDown { keycode: Some(Keycode::Down), ..} => {
+                    player.position = player.position.offset(0, player.speed);
                 },
                 _ => {}
             }
