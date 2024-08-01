@@ -4,6 +4,8 @@ mod animator;
 mod keyboard;
 mod renderer;
 
+// https://sunjay.dev/learn-game-dev/adding-enemies.html
+
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
