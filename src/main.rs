@@ -3,6 +3,7 @@ mod physics;
 mod animator;
 mod keyboard;
 mod renderer;
+mod ai;
 
 use sdl2::pixels::Color;
 use sdl2::event::Event;
@@ -85,6 +86,7 @@ fn initialise_enemy(world: &mut World, enemy_spritesheet: usize, position: Point
     };
 
     world.create_entity()
+        .with(Enemy)
         .with(Position(position))
         .with(Velocity {speed: 0, direction: Direction::Right})
         .with(enemy_animation.right_frames[0].clone())
@@ -111,8 +113,9 @@ fn main() -> Result<(), String> {
 
     let mut dispatcher = DispatcherBuilder::new()
         .with(keyboard::Keyboard, "Keyboard", &[])
-        .with(physics::Physics, "Physics", &["Keyboard"])
-        .with(animator::Animator, "Animator", &["Keyboard"])
+        .with(ai::AI, "AI", &[])
+        .with(physics::Physics, "Physics", &["Keyboard", "AI"])
+        .with(animator::Animator, "Animator", &["Keyboard", "AI"])
         .build();
 
     let mut world = World::new();

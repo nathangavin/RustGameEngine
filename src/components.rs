@@ -13,7 +13,12 @@ pub enum Direction {
 #[derive(Default, Debug)]
 pub struct KeyboardControlled;
 impl Component for KeyboardControlled {
-    type Storage = VecStorage<Self>;
+    type Storage = NullStorage<Self>;
+}
+
+pub struct Enemy;
+impl Component for Enemy {
+    type Storage = NullStorage<Self>;
 }
 
 pub struct Position(pub Point);
