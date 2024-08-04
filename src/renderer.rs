@@ -7,7 +7,8 @@ use crate::components::*;
 
 pub type SystemData<'a> = (
     ReadStorage<'a, Position>,
-    ReadStorage<'a, Sprite>
+    ReadStorage<'a, Sprite>,
+    ReadStorage<'a, Polygon>,
 );
 
 pub fn render(
@@ -18,6 +19,7 @@ pub fn render(
 
         canvas.set_draw_color(background);
         canvas.clear();
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
 
         let (width, height) = canvas.output_size()?;
 
@@ -29,6 +31,15 @@ pub fn render(
                                                         current_frame.width(), 
                                                         current_frame.height());
             canvas.copy(&textures[sprite.spritesheet], current_frame, screen_rect)?;
+        }
+
+        for (pos, polygon) in (&data.0, &data.2).join() {
+            for (i, vertex) in polygon.0.iter().enumerate() {
+                match polygon.0.get(i+1) {
+                    Some(n_v) => canvas.draw_line(*vertex, *n_v)?,
+                    None => ()
+                }
+            }
         }
 
         canvas.present();

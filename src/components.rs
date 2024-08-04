@@ -34,6 +34,11 @@ impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
 
+pub struct Polygon(pub Vec<Point>);
+impl Component for Polygon {
+    type Storage = VecStorage<Self>;
+}
+
 #[derive(Clone, Copy)]
 pub struct Sprite {
     pub spritesheet: usize,

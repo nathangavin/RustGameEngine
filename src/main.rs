@@ -94,6 +94,13 @@ fn initialise_enemy(world: &mut World, enemy_spritesheet: usize, position: Point
         .build();
 }
 
+fn initialise_polygon(world: &mut World, vertices: Vec<Point>, position: Point) {
+    world.create_entity()
+        .with(Position(position))
+        .with(Polygon(vertices))
+        .build();
+}
+
 fn main() -> Result<(), String> {
 
     let sdl_context = sdl2::init()?;
@@ -139,6 +146,15 @@ fn main() -> Result<(), String> {
     initialise_enemy(&mut world, enemy_spritesheet, Point::new(-150, -150));
     initialise_enemy(&mut world, enemy_spritesheet, Point::new(-150, 170));
     
+    let vertices = vec![
+        Point::new(-150, -150),
+        Point::new(-150, 150),
+        Point::new(150, 150),
+        Point::new(150, -150),
+    ];
+    initialise_polygon(&mut world, vertices, Point::new(0, 0));
+    
+
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
 
