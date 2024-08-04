@@ -34,11 +34,24 @@ pub fn render(
         }
 
         for (pos, polygon) in (&data.0, &data.2).join() {
+            let centre = Point::new(width as i32 / 2, height as i32 /2);
             for (i, vertex) in polygon.0.iter().enumerate() {
                 match polygon.0.get(i+1) {
-                    Some(n_v) => canvas.draw_line(*vertex, *n_v)?,
+                    Some(n_v) => canvas.draw_line(*vertex + centre, *n_v + centre)?,
                     None => ()
                 }
+            }
+
+            match polygon.0.last() {
+                Some(last) => {
+                    match polygon.0.first() {
+                        Some(first) => {
+                            canvas.draw_line(*last + centre, *first + centre)?;
+                        },
+                        None => ()
+                    }
+                },
+                None => ()
             }
         }
 

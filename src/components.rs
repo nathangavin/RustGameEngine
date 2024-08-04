@@ -10,6 +10,11 @@ pub enum Direction {
     Right,
 }
 
+pub struct FDirection(pub (f32, f32));
+impl Component for FDirection {
+    type Storage = VecStorage<Self>;
+}
+
 #[derive(Default, Debug)]
 pub struct KeyboardControlled;
 impl Component for KeyboardControlled {
