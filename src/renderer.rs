@@ -14,6 +14,7 @@ pub type SystemData<'a> = (
     ReadStorage<'a, Position>,
     ReadStorage<'a, OrbitalPath>,
     ReadStorage<'a, Velocity>,
+    ReadStorage<'a, Polygon>,
 
 );
 
@@ -64,12 +65,15 @@ pub fn render(
 
         let half_width = width as f32 / 2.0;
         let half_height = height as f32 / 2.0;
+
+        // draw fixed bodies
         for (cbody, fixed_pos) in (&data.1, &data.2).join() {
             let screen_position = FPoint::new(fixed_pos.0.x + half_width, 
                                     fixed_pos.0.y + half_height);
             draw_circle(canvas, screen_position, cbody.radius, 100).unwrap();
         }
 
+        // draw bodies on rails
         for (cbody, rail) in (&data.1, &data.3).join() {
             let body_position = FPoint::new(half_width + rail.centre.0 + (rail.radius * rail.angle.cos()),
                 half_height + rail.centre.1 + (rail.radius * rail.angle.sin()));  
@@ -77,10 +81,27 @@ pub fn render(
             draw_circle(canvas, body_position, cbody.radius, 100).unwrap();
         }
 
+        // draw free bodies
+        for (pos, velocity, polygon) in (&data.2, &data.4, &data.5).join() {
+            let mut f_points = vec![FPoint::new(0.0,0.0); polygon.0.len() + 1];
+            for (i,point) in polygon.0.iter().enumerate() {
+                f_points[i].x = half_width + pos.0.x + point.x;
+                f_points[i].y = half_height + pos.0.y + point.y;
+            } 
+            
+            f_points[polygon.0.len()].x = half_width + pos.0.x + polygon.0[0].x;
+            f_points[polygon.0.len()].y = half_height + pos.0.y + polygon.0[0].y;
+
+            println!("{:?}", f_points);
+
+            canvas.draw_flines(f_points.as_slice()).unwrap();
+        }
+
         canvas.present();
 
         Ok(())
 }
+
 
 
 fn draw_circle(canvas: &mut WindowCanvas, position: FPoint, radius: f32, steps: usize) -> Result<(), String> {

@@ -136,10 +136,10 @@ fn initialise_free_body(world: &mut World,
                             velocity: (f32, f32)) {
 
     world.create_entity()
-        .with(Mass(mass))
         .with(Position(position))
-        .with(Velocity {x_speed: velocity.0, y_speed: velocity.1})
+        .with(Mass(mass))
         .with(Polygon(vertices))
+        .with(Velocity {x_speed: velocity.0, y_speed: velocity.1})
         .build();
 }
 
@@ -183,16 +183,6 @@ fn main() -> Result<(), String> {
     let player_spritesheet = 0;
     let enemy_spritesheet = 1;
 
-    /*
-    let vertices = vec![
-        Point::new(-150, -150),
-        Point::new(-150, 150),
-        Point::new(150, 150),
-        Point::new(150, -150),
-    ];
-    initialise_polygon(&mut world, vertices, Point::new(0, 0));
-    */
-    
     let rail = OrbitalPath {
         centre: (0.0, 0.0),
         radius: 40.0,
@@ -201,6 +191,14 @@ fn main() -> Result<(), String> {
     };
     initialise_planet(&mut world, FPoint::new(-200.0,0.0), 100.0, 50.0, None);
     initialise_planet(&mut world, FPoint::new(0.0, 0.0), 20.0, 20.0, Some(rail));
+
+    let vertices = vec![
+        FPoint::new(-10.0, -10.0),
+        FPoint::new(-10.0, 10.0),
+        FPoint::new(10.0, 10.0),
+        FPoint::new(10.0, -10.0),
+    ];
+   initialise_free_body(&mut world, FPoint::new(0.0,0.0), 5.0, vertices, (0.0, 1.0));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
