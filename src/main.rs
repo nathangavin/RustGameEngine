@@ -109,20 +109,21 @@ fn initialise_planet(world: &mut World,
                         position: (f32, f32), 
                         mass: f32, 
                         radius: f32,
-                        rail_path: Option<Rail>) {
+                        rail_path: Option<OrbitalRailPosition>) {
 
     match rail_path {
         Some(rail) => {
             world.create_entity()
             .with(Mass(mass))
-            .with(CelestialBody { radius, position })
+            .with(CelestialBody { radius })
             .with(rail)
             .build();
             },
         None => {
             world.create_entity()
             .with(Mass(mass))
-            .with(CelestialBody { radius, position })
+            .with(CelestialBody { radius })
+            .with(FixedPosition { x: position.0, y: position.1 })
             .build();
         }
     }
@@ -148,7 +149,7 @@ fn main() -> Result<(), String> {
         //.with(keyboard::Keyboard, "Keyboard", &[])
         //.with(ai::AI, "AI", &[])
         //.with(physics::Physics, "Physics", &["Keyboard", "AI"])
-        //.with(animator::Animator, "Animator", &["Keyboard", "AI"])
+        .with(animator::Animator, "Animator", &[])
         .build();
 
     let mut world = World::new();
@@ -175,8 +176,15 @@ fn main() -> Result<(), String> {
     ];
     initialise_polygon(&mut world, vertices, Point::new(0, 0));
     */
-
+    
+    let rail = OrbitalRailPosition {
+        centre: (0.0, 0.0),
+        radius: 40.0,
+        angle: 0.0,
+        rotation_speed: 0.01
+    };
     initialise_planet(&mut world, (-200.0,0.0), 100.0, 50.0, None);
+    initialise_planet(&mut world, (0.0, 0.0), 20.0, 20.0, Some(rail));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;

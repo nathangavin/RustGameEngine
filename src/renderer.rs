@@ -11,7 +11,8 @@ use crate::components::*;
 pub type SystemData<'a> = (
     ReadStorage<'a, Mass>,
     ReadStorage<'a, CelestialBody>,
-    ReadStorage<'a, Rail>,
+    ReadStorage<'a, FixedPosition>,
+    ReadStorage<'a, OrbitalRailPosition>,
 
 );
 
@@ -62,10 +63,17 @@ pub fn render(
 
         let half_width = width as f32 / 2.0;
         let half_height = height as f32 / 2.0;
-        for cbody in (&data.1).join() {
-            let screen_position = (cbody.position.0 + half_width, 
-                                    cbody.position.1 + half_height);
+        for (cbody, fixed_pos) in (&data.1, &data.2).join() {
+            let screen_position = (fixed_pos.x + half_width, 
+                                    fixed_pos.y + half_height);
             draw_circle(canvas, screen_position, cbody.radius, 100).unwrap();
+        }
+
+        for (cbody, rail) in (&data.1, &data.3).join() {
+            let body_position = (half_width + rail.centre.0 + (rail.radius * rail.angle.cos()),
+                half_height + rail.centre.1 + (rail.radius * rail.angle.sin()));  
+
+            draw_circle(canvas, body_position, cbody.radius, 100).unwrap();
         }
 
         canvas.present();

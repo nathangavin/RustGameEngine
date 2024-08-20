@@ -48,19 +48,26 @@ impl Component for Mass {
 
 pub struct CelestialBody {
     pub radius: f32,
-    pub position: (f32, f32)
 }
 impl Component for CelestialBody {
     type Storage = VecStorage<Self>;
 }
 
-pub struct Rail {
+pub struct FixedPosition {
+    pub x: f32,
+    pub y: f32
+}
+impl Component for FixedPosition{
+    type Storage = VecStorage<Self>;
+}
+
+pub struct OrbitalRailPosition {
     pub centre: (f32, f32),
     pub radius: f32,
     pub angle: f32,
-    pub period: u32
+    pub rotation_speed: f32 
 }
-impl Component for Rail {
+impl Component for OrbitalRailPosition {
     type Storage = VecStorage<Self>;
 }
 
