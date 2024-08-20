@@ -58,6 +58,7 @@ impl Component for Position {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Debug)]
 pub struct Velocity {
     pub x_speed: f32,
     pub y_speed: f32

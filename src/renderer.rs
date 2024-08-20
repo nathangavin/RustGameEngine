@@ -92,8 +92,6 @@ pub fn render(
             f_points[polygon.0.len()].x = half_width + pos.0.x + polygon.0[0].x;
             f_points[polygon.0.len()].y = half_height + pos.0.y + polygon.0[0].y;
 
-            println!("{:?}", f_points);
-
             canvas.draw_flines(f_points.as_slice()).unwrap();
         }
 

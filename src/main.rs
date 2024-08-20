@@ -165,7 +165,8 @@ fn main() -> Result<(), String> {
         //.with(keyboard::Keyboard, "Keyboard", &[])
         //.with(ai::AI, "AI", &[])
         //.with(physics::Physics, "Physics", &["Keyboard", "AI"])
-        .with(animator::Animator, "Animator", &[])
+        .with(physics::Physics, "Physics", &[])
+        .with(animator::Animator, "Animator", &["Physics"])
         .build();
 
     let mut world = World::new();
@@ -185,12 +186,12 @@ fn main() -> Result<(), String> {
 
     let rail = OrbitalPath {
         centre: (0.0, 0.0),
-        radius: 40.0,
+        radius: 200.0,
         angle: 0.0,
         rotation_speed: 0.01
     };
-    initialise_planet(&mut world, FPoint::new(-200.0,0.0), 100.0, 50.0, None);
-    initialise_planet(&mut world, FPoint::new(0.0, 0.0), 20.0, 20.0, Some(rail));
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e12, 50.0, None);
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 1e11, 20.0, Some(rail));
 
     let vertices = vec![
         FPoint::new(-10.0, -10.0),
@@ -198,7 +199,7 @@ fn main() -> Result<(), String> {
         FPoint::new(10.0, 10.0),
         FPoint::new(10.0, -10.0),
     ];
-   initialise_free_body(&mut world, FPoint::new(0.0,0.0), 5.0, vertices, (0.0, 1.0));
+   initialise_free_body(&mut world, FPoint::new(150.0,0.0), 5.0, vertices, (0.0, 0.1));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;

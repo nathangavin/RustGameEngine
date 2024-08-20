@@ -30,6 +30,7 @@ impl<'a> System<'a> for Animator {
 
         // update position of free bodies
         for (position, velocity) in (&mut data.2, &data.4).join() {
+            println!("{:?}", velocity);
             position.0.x += velocity.x_speed;
             position.0.y += velocity.y_speed;
         }
