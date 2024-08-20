@@ -15,7 +15,8 @@ pub type SystemData<'a> = (
     ReadStorage<'a, OrbitalPath>,
     ReadStorage<'a, Velocity>,
     ReadStorage<'a, Polygon>,
-
+    ReadStorage<'a, Acceleration>,
+    ReadStorage<'a, Forces>,
 );
 
 pub fn render(
@@ -82,7 +83,7 @@ pub fn render(
         }
 
         // draw free bodies
-        for (pos, velocity, polygon) in (&data.2, &data.4, &data.5).join() {
+        for (pos, polygon, acceleration, forces) in (&data.2, &data.5, &data.6, &data.7).join() {
             let mut f_points = vec![FPoint::new(0.0,0.0); polygon.0.len() + 1];
             for (i,point) in polygon.0.iter().enumerate() {
                 f_points[i].x = half_width + pos.0.x + point.x;
@@ -93,6 +94,20 @@ pub fn render(
             f_points[polygon.0.len()].y = half_height + pos.0.y + polygon.0[0].y;
 
             canvas.draw_flines(f_points.as_slice()).unwrap();
+            
+            // draw acceleration as a vector multiplied by 10 
+            println!("{:?}", acceleration);
+            println!("{:?}", forces.0);
+            for force in forces.0.as_slice() {
+                canvas.draw_fline(
+                            FPoint::new(
+                                half_width + pos.0.x, 
+                                half_height + pos.0.y),
+                            FPoint::new(
+                                half_width + pos.0.x + (10.0 * force.0),
+                                half_height + pos.0.y + (10.0 * force.1))).unwrap();
+
+            }
         }
 
         canvas.present();

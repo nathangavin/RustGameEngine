@@ -140,6 +140,8 @@ fn initialise_free_body(world: &mut World,
         .with(Mass(mass))
         .with(Polygon(vertices))
         .with(Velocity {x_speed: velocity.0, y_speed: velocity.1})
+        .with(Acceleration { x_accel: 0.0, y_accel: 0.0})
+        .with(Forces(Vec::new()))
         .build();
 }
 
@@ -188,10 +190,18 @@ fn main() -> Result<(), String> {
         centre: (0.0, 0.0),
         radius: 200.0,
         angle: 0.0,
-        rotation_speed: 0.01
+        rotation_speed: 0.002
+    };
+    let rail2 = OrbitalPath {
+        centre: (0.0, 0.0),
+        radius: 300.0,
+        angle: 0.0,
+        rotation_speed: 0.001
     };
     initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e12, 50.0, None);
-    initialise_planet(&mut world, FPoint::new(0.0,0.0), 1e11, 20.0, Some(rail));
+    initialise_planet(&mut world, FPoint::new(0.0,-100.0), 6e10, 20.0, None);
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e10, 20.0, Some(rail));
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 2e10, 10.0, Some(rail2));
 
     let vertices = vec![
         FPoint::new(-10.0, -10.0),
@@ -199,10 +209,11 @@ fn main() -> Result<(), String> {
         FPoint::new(10.0, 10.0),
         FPoint::new(10.0, -10.0),
     ];
-   initialise_free_body(&mut world, FPoint::new(150.0,0.0), 5.0, vertices, (0.0, 0.1));
+   initialise_free_body(&mut world, FPoint::new(175.0,0.0), 1e5, vertices, (0.0, 1.0));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
+    let mut count = 0;
 
     'running: loop {
         // handling events
@@ -243,6 +254,8 @@ fn main() -> Result<(), String> {
         i = (i + 1) % 255;
         dispatcher.dispatch(&mut world);
         world.maintain();
+        count += 1;
+        println!("{}", count);
 
         // Render
         renderer::render(&mut canvas, Color::RGB(i, 64, 255 - i), world.system_data())?;

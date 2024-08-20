@@ -67,6 +67,21 @@ impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
 
+pub struct Forces(pub Vec<(f32, f32)>);
+impl Component for Forces {
+    type Storage = VecStorage<Self>;
+}
+
+
+#[derive(Debug)]
+pub struct Acceleration {
+    pub x_accel: f32,
+    pub y_accel: f32
+}
+impl Component for Acceleration {
+    type Storage = VecStorage<Self>;
+}
+
 pub struct OrbitalPath {
     pub centre: (f32, f32),
     pub radius: f32,
