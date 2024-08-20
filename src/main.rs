@@ -31,6 +31,7 @@ fn direction_spreadsheet_row(direction: Direction) -> i32 {
     }
 }
 
+/*
 fn character_animation_frames(
                 spritesheet: usize, 
                 top_left_frame: Rect, 
@@ -93,12 +94,38 @@ fn initialise_enemy(world: &mut World, enemy_spritesheet: usize, position: Point
         .with(enemy_animation)
         .build();
 }
+*/
 
+/*
 fn initialise_polygon(world: &mut World, vertices: Vec<Point>, position: Point) {
     world.create_entity()
         .with(Position(position))
         .with(Polygon(vertices))
         .build();
+}
+*/
+
+fn initialise_planet(world: &mut World, 
+                        position: (f32, f32), 
+                        mass: f32, 
+                        radius: f32,
+                        rail_path: Option<Rail>) {
+
+    match rail_path {
+        Some(rail) => {
+            world.create_entity()
+            .with(Mass(mass))
+            .with(CelestialBody { radius, position })
+            .with(rail)
+            .build();
+            },
+        None => {
+            world.create_entity()
+            .with(Mass(mass))
+            .with(CelestialBody { radius, position })
+            .build();
+        }
+    }
 }
 
 fn main() -> Result<(), String> {
@@ -112,17 +139,16 @@ fn main() -> Result<(), String> {
         .build()
         .expect("could not initialise video subsystem");
 
-
     let mut canvas =  window.into_canvas().build()
         .expect("could not make a canvas");
 
     let texture_creator = canvas.texture_creator();
 
     let mut dispatcher = DispatcherBuilder::new()
-        .with(keyboard::Keyboard, "Keyboard", &[])
-        .with(ai::AI, "AI", &[])
-        .with(physics::Physics, "Physics", &["Keyboard", "AI"])
-        .with(animator::Animator, "Animator", &["Keyboard", "AI"])
+        //.with(keyboard::Keyboard, "Keyboard", &[])
+        //.with(ai::AI, "AI", &[])
+        //.with(physics::Physics, "Physics", &["Keyboard", "AI"])
+        //.with(animator::Animator, "Animator", &["Keyboard", "AI"])
         .build();
 
     let mut world = World::new();
@@ -140,12 +166,7 @@ fn main() -> Result<(), String> {
     let player_spritesheet = 0;
     let enemy_spritesheet = 1;
 
-    initialise_player(&mut world, player_spritesheet);
-    initialise_enemy(&mut world, enemy_spritesheet, Point::new(-150, -150));
-    initialise_enemy(&mut world, enemy_spritesheet, Point::new(150, -190));
-    initialise_enemy(&mut world, enemy_spritesheet, Point::new(-150, -150));
-    initialise_enemy(&mut world, enemy_spritesheet, Point::new(-150, 170));
-    
+    /*
     let vertices = vec![
         Point::new(-150, -150),
         Point::new(-150, 150),
@@ -153,7 +174,9 @@ fn main() -> Result<(), String> {
         Point::new(150, -150),
     ];
     initialise_polygon(&mut world, vertices, Point::new(0, 0));
-    
+    */
+
+    initialise_planet(&mut world, (-200.0,0.0), 100.0, 50.0, None);
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
@@ -199,10 +222,10 @@ fn main() -> Result<(), String> {
         world.maintain();
 
         // Render
-        renderer::render(&mut canvas, Color::RGB(i, 64, 255 - i), &textures, world.system_data())?;
+        renderer::render(&mut canvas, Color::RGB(i, 64, 255 - i), world.system_data())?;
 
         // Time management
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 20));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
 
     }
 

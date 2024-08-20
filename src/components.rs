@@ -21,6 +21,7 @@ impl Component for KeyboardControlled {
     type Storage = NullStorage<Self>;
 }
 
+/*
 pub struct Enemy;
 impl Component for Enemy {
     type Storage = NullStorage<Self>;
@@ -38,12 +39,37 @@ pub struct Velocity {
 impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
+*/
+
+pub struct Mass(pub f32);
+impl Component for Mass {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct CelestialBody {
+    pub radius: f32,
+    pub position: (f32, f32)
+}
+impl Component for CelestialBody {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct Rail {
+    pub centre: (f32, f32),
+    pub radius: f32,
+    pub angle: f32,
+    pub period: u32
+}
+impl Component for Rail {
+    type Storage = VecStorage<Self>;
+}
 
 pub struct Polygon(pub Vec<Point>);
 impl Component for Polygon {
     type Storage = VecStorage<Self>;
 }
 
+/*
 #[derive(Clone, Copy)]
 pub struct Sprite {
     pub spritesheet: usize,
@@ -63,3 +89,4 @@ pub struct MovementAnimation {
 impl Component for MovementAnimation {
     type Storage = VecStorage<Self>;
 }
+*/

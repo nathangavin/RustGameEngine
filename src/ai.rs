@@ -7,6 +7,7 @@ const ENEMY_MOVEMENT_SPEED: i32 = 10;
 
 pub struct AI;
 
+/*
 impl<'a> System<'a> for AI {
     type SystemData = (
         ReadStorage<'a, Enemy>,
@@ -31,4 +32,4 @@ impl<'a> System<'a> for AI {
         }
     }
 }
-
+*/

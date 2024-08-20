@@ -4,6 +4,7 @@ use crate::components::*;
 
 pub struct Animator;
 
+/*
 impl<'a> System<'a> for Animator {
     type SystemData = (
         WriteStorage<'a, MovementAnimation>, 
@@ -31,3 +32,4 @@ impl<'a> System<'a> for Animator {
         }
     }
 }
+*/

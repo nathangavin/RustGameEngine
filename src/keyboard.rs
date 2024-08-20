@@ -8,6 +8,7 @@ const PLAYER_MOVEMENT_SPEED: i32 = 20;
 
 pub struct Keyboard;
 
+/*
 impl<'a> System<'a> for Keyboard {
     type SystemData = (
         ReadExpect<'a, Option<MovementCommand>>,
@@ -33,3 +34,4 @@ impl<'a> System<'a> for Keyboard {
         }
     }
 }
+*/

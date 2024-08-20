@@ -4,6 +4,7 @@ use crate::components::*;
 
 pub struct Physics;
 
+/*
 impl<'a> System<'a> for Physics {
     type SystemData = (WriteStorage<'a, Position>, ReadStorage<'a, Velocity>);
 
@@ -28,3 +29,4 @@ impl<'a> System<'a> for Physics {
         }
     }
 }
+*/

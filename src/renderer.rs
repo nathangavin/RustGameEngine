@@ -1,20 +1,23 @@
+use std::f32::consts::PI;
+
+use sdl2::libc::printf;
 use specs::prelude::*;
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::{FPoint, Point, Rect};
 use sdl2::pixels::Color;
 use sdl2::render::{WindowCanvas,Texture};
 
 use crate::components::*;
 
 pub type SystemData<'a> = (
-    ReadStorage<'a, Position>,
-    ReadStorage<'a, Sprite>,
-    ReadStorage<'a, Polygon>,
+    ReadStorage<'a, Mass>,
+    ReadStorage<'a, CelestialBody>,
+    ReadStorage<'a, Rail>,
+
 );
 
 pub fn render(
     canvas: &mut WindowCanvas,
     background: Color,
-    textures: &[Texture],
     data: SystemData) -> Result<(), String> {
 
         canvas.set_draw_color(background);
@@ -23,6 +26,7 @@ pub fn render(
 
         let (width, height) = canvas.output_size()?;
 
+        /*
         for (pos, sprite) in (&data.0, &data.1).join() {
             let current_frame = sprite.region;
 
@@ -41,7 +45,7 @@ pub fn render(
                     None => ()
                 }
             }
-
+        
             match polygon.0.last() {
                 Some(last) => {
                     match polygon.0.first() {
@@ -54,8 +58,34 @@ pub fn render(
                 None => ()
             }
         }
+        */
+
+        let half_width = width as f32 / 2.0;
+        let half_height = height as f32 / 2.0;
+        for cbody in (&data.1).join() {
+            let screen_position = (cbody.position.0 + half_width, 
+                                    cbody.position.1 + half_height);
+            draw_circle(canvas, screen_position, cbody.radius, 100).unwrap();
+        }
 
         canvas.present();
 
         Ok(())
+}
+
+
+fn draw_circle(canvas: &mut WindowCanvas, position: (f32, f32), radius: f32, steps: usize) -> Result<(), String> {
+    let mut f_points = vec![FPoint::new(0.0, 0.0); steps + 1];
+   
+    let two_pi = 2.0 * PI;
+    for pos in 0..steps {
+        let angle = (pos as f32 * two_pi) / steps as f32;
+        f_points[pos].x = position.0 + radius * angle.cos();
+        f_points[pos].y = position.1 + radius * angle.sin();
+    }
+
+    f_points[steps].x = position.0 + radius;
+    f_points[steps].y = position.1;
+
+    canvas.draw_flines(f_points.as_slice())
 }
