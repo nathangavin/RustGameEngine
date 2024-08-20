@@ -40,28 +40,6 @@ pub fn render(
                                                         current_frame.height());
             canvas.copy(&textures[sprite.spritesheet], current_frame, screen_rect)?;
         }
-
-        for (pos, polygon) in (&data.0, &data.2).join() {
-            let centre = Point::new(width as i32 / 2, height as i32 /2);
-            for (i, vertex) in polygon.0.iter().enumerate() {
-                match polygon.0.get(i+1) {
-                    Some(n_v) => canvas.draw_line(*vertex + centre, *n_v + centre)?,
-                    None => ()
-                }
-            }
-        
-            match polygon.0.last() {
-                Some(last) => {
-                    match polygon.0.first() {
-                        Some(first) => {
-                            canvas.draw_line(*last + centre, *first + centre)?;
-                        },
-                        None => ()
-                    }
-                },
-                None => ()
-            }
-        }
         */
 
         let half_width = width as f32 / 2.0;
@@ -95,9 +73,7 @@ pub fn render(
 
             canvas.draw_flines(f_points.as_slice()).unwrap();
             
-            // draw acceleration as a vector multiplied by 10 
-            println!("{:?}", acceleration);
-            println!("{:?}", forces.0);
+            // draw forces as vectors multiplied by 10 
             for force in forces.0.as_slice() {
                 canvas.draw_fline(
                             FPoint::new(
