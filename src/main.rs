@@ -8,8 +8,8 @@ mod ai;
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::rect::{Point, Rect};
 use sdl2::image::{self, LoadTexture, InitFlag};
+use sdl2::rect::FPoint;
 use std::time::Duration;
 
 use specs::prelude::*;
@@ -106,28 +106,44 @@ fn initialise_polygon(world: &mut World, vertices: Vec<Point>, position: Point) 
 */
 
 fn initialise_planet(world: &mut World, 
-                        position: (f32, f32), 
+                        position: FPoint, 
                         mass: f32, 
                         radius: f32,
-                        rail_path: Option<OrbitalRailPosition>) {
+                        orbital_path: Option<OrbitalPath>) {
 
-    match rail_path {
-        Some(rail) => {
+    match orbital_path {
+        Some(path) => {
             world.create_entity()
             .with(Mass(mass))
             .with(CelestialBody { radius })
-            .with(rail)
+            .with(path)
             .build();
             },
         None => {
             world.create_entity()
             .with(Mass(mass))
             .with(CelestialBody { radius })
-            .with(FixedPosition { x: position.0, y: position.1 })
+            .with(Position(position))
             .build();
         }
     }
 }
+
+fn initialise_free_body(world: &mut World,
+                            position: FPoint,
+                            mass: f32,
+                            vertices: Vec<FPoint>,
+                            velocity: (f32, f32)) {
+
+    world.create_entity()
+        .with(Mass(mass))
+        .with(Position(position))
+        .with(Velocity {x_speed: velocity.0, y_speed: velocity.1})
+        .with(Polygon(vertices))
+        .build();
+}
+
+
 
 fn main() -> Result<(), String> {
 
@@ -177,14 +193,14 @@ fn main() -> Result<(), String> {
     initialise_polygon(&mut world, vertices, Point::new(0, 0));
     */
     
-    let rail = OrbitalRailPosition {
+    let rail = OrbitalPath {
         centre: (0.0, 0.0),
         radius: 40.0,
         angle: 0.0,
         rotation_speed: 0.01
     };
-    initialise_planet(&mut world, (-200.0,0.0), 100.0, 50.0, None);
-    initialise_planet(&mut world, (0.0, 0.0), 20.0, 20.0, Some(rail));
+    initialise_planet(&mut world, FPoint::new(-200.0,0.0), 100.0, 50.0, None);
+    initialise_planet(&mut world, FPoint::new(0.0, 0.0), 20.0, 20.0, Some(rail));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;

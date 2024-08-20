@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use sdl2::rect::{Point, Rect};
+use sdl2::rect::{FPoint, Point, Rect};
 
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,25 +53,30 @@ impl Component for CelestialBody {
     type Storage = VecStorage<Self>;
 }
 
-pub struct FixedPosition {
-    pub x: f32,
-    pub y: f32
-}
-impl Component for FixedPosition{
+pub struct Position(pub FPoint);
+impl Component for Position {
     type Storage = VecStorage<Self>;
 }
 
-pub struct OrbitalRailPosition {
+pub struct Velocity {
+    pub x_speed: f32,
+    pub y_speed: f32
+}
+impl Component for Velocity {
+    type Storage = VecStorage<Self>;
+}
+
+pub struct OrbitalPath {
     pub centre: (f32, f32),
     pub radius: f32,
     pub angle: f32,
     pub rotation_speed: f32 
 }
-impl Component for OrbitalRailPosition {
+impl Component for OrbitalPath {
     type Storage = VecStorage<Self>;
 }
 
-pub struct Polygon(pub Vec<Point>);
+pub struct Polygon(pub Vec<FPoint>);
 impl Component for Polygon {
     type Storage = VecStorage<Self>;
 }

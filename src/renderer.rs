@@ -11,8 +11,9 @@ use crate::components::*;
 pub type SystemData<'a> = (
     ReadStorage<'a, Mass>,
     ReadStorage<'a, CelestialBody>,
-    ReadStorage<'a, FixedPosition>,
-    ReadStorage<'a, OrbitalRailPosition>,
+    ReadStorage<'a, Position>,
+    ReadStorage<'a, OrbitalPath>,
+    ReadStorage<'a, Velocity>,
 
 );
 
@@ -64,13 +65,13 @@ pub fn render(
         let half_width = width as f32 / 2.0;
         let half_height = height as f32 / 2.0;
         for (cbody, fixed_pos) in (&data.1, &data.2).join() {
-            let screen_position = (fixed_pos.x + half_width, 
-                                    fixed_pos.y + half_height);
+            let screen_position = FPoint::new(fixed_pos.0.x + half_width, 
+                                    fixed_pos.0.y + half_height);
             draw_circle(canvas, screen_position, cbody.radius, 100).unwrap();
         }
 
         for (cbody, rail) in (&data.1, &data.3).join() {
-            let body_position = (half_width + rail.centre.0 + (rail.radius * rail.angle.cos()),
+            let body_position = FPoint::new(half_width + rail.centre.0 + (rail.radius * rail.angle.cos()),
                 half_height + rail.centre.1 + (rail.radius * rail.angle.sin()));  
 
             draw_circle(canvas, body_position, cbody.radius, 100).unwrap();
@@ -82,18 +83,19 @@ pub fn render(
 }
 
 
-fn draw_circle(canvas: &mut WindowCanvas, position: (f32, f32), radius: f32, steps: usize) -> Result<(), String> {
+fn draw_circle(canvas: &mut WindowCanvas, position: FPoint, radius: f32, steps: usize) -> Result<(), String> {
     let mut f_points = vec![FPoint::new(0.0, 0.0); steps + 1];
    
     let two_pi = 2.0 * PI;
     for pos in 0..steps {
         let angle = (pos as f32 * two_pi) / steps as f32;
-        f_points[pos].x = position.0 + radius * angle.cos();
-        f_points[pos].y = position.1 + radius * angle.sin();
+        f_points[pos].x = position.x + radius * angle.cos();
+        f_points[pos].y = position.y + radius * angle.sin();
+        
     }
 
-    f_points[steps].x = position.0 + radius;
-    f_points[steps].y = position.1;
+    f_points[steps].x = position.x + radius;
+    f_points[steps].y = position.y;
 
     canvas.draw_flines(f_points.as_slice())
 }

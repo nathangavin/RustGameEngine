@@ -10,8 +10,8 @@ impl<'a> System<'a> for Animator {
     type SystemData = (
         ReadStorage<'a, Mass>,
         ReadStorage<'a, CelestialBody>,
-        ReadStorage<'a, FixedPosition>,
-        WriteStorage<'a, OrbitalRailPosition>);
+        ReadStorage<'a, Position>,
+        WriteStorage<'a, OrbitalPath>);
 
     fn run(&mut self, mut data: Self::SystemData) {
         use self::Direction::*;
