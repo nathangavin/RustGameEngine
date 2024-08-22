@@ -12,7 +12,7 @@ pub type SystemData<'a> = (
     ReadStorage<'a, Mass>,
     ReadStorage<'a, CelestialBody>,
     ReadStorage<'a, Position>,
-    ReadStorage<'a, OrbitalPath>,
+    ReadStorage<'a, OrbitalPaths>,
     ReadStorage<'a, Velocity>,
     ReadStorage<'a, Polygon>,
     ReadStorage<'a, Acceleration>,
@@ -53,9 +53,12 @@ pub fn render(
         }
 
         // draw bodies on rails
-        for (cbody, rail) in (&data.1, &data.3).join() {
-            let body_position = FPoint::new(half_width + rail.centre.0 + (rail.radius * rail.angle.cos()),
-                half_height + rail.centre.1 + (rail.radius * rail.angle.sin()));  
+        for (cbody, rails) in (&data.1, &data.3).join() {
+            let mut body_position = FPoint::new(half_width, half_height);
+            for rail in rails.0.as_slice() {
+                body_position.x += rail.centre.0 + (rail.radius * rail.angle.cos());
+                body_position.y += rail.centre.1 + (rail.radius * rail.angle.sin());
+            }
 
             draw_circle(canvas, body_position, cbody.radius, 100).unwrap();
         }

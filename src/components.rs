@@ -82,13 +82,15 @@ impl Component for Acceleration {
     type Storage = VecStorage<Self>;
 }
 
+#[derive(Clone, Copy)]
 pub struct OrbitalPath {
     pub centre: (f32, f32),
     pub radius: f32,
     pub angle: f32,
     pub rotation_speed: f32 
 }
-impl Component for OrbitalPath {
+pub struct OrbitalPaths(pub Vec<OrbitalPath>);
+impl Component for OrbitalPaths {
     type Storage = VecStorage<Self>;
 }
 

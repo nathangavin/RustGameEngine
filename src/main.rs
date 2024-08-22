@@ -10,7 +10,7 @@ use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::image::{self, LoadTexture, InitFlag};
 use sdl2::rect::FPoint;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use specs::prelude::*;
 
@@ -35,36 +35,34 @@ fn initialise_planet(world: &mut World,
                         position: FPoint, 
                         mass: f32, 
                         radius: f32,
-                        orbital_path: Option<OrbitalPath>) {
+                        orbital_paths: Vec<OrbitalPath>) {
 
-    match orbital_path {
-        Some(path) => {
-            world.create_entity()
-            .with(Mass(mass))
-            .with(CelestialBody { radius })
-            .with(path)
-            .build();
-            },
-        None => {
-            world.create_entity()
-            .with(Mass(mass))
-            .with(CelestialBody { radius })
-            .with(Position(position))
-            .build();
-        }
+    if orbital_paths.is_empty() {
+        world.create_entity()
+        .with(Mass(mass))
+        .with(CelestialBody { radius })
+        .with(Position(position))
+        .build();
+
+    } else {
+        world.create_entity()
+        .with(Mass(mass))
+        .with(CelestialBody { radius })
+        .with(OrbitalPaths(orbital_paths))
+        .build();
     }
-}
+} 
 
 fn initialise_free_body(world: &mut World,
                             position: FPoint,
                             mass: f32,
-                            vertices: Vec<FPoint>,
+                            vertices: &Vec<FPoint>,
                             velocity: (f32, f32)) {
 
     world.create_entity()
         .with(Position(position))
         .with(Mass(mass))
-        .with(Polygon(vertices))
+        .with(Polygon(vertices.to_vec()))
         .with(Velocity {x_speed: velocity.0, y_speed: velocity.1})
         .with(Acceleration { x_accel: 0.0, y_accel: 0.0})
         .with(Forces(Vec::new()))
@@ -119,12 +117,19 @@ fn main() -> Result<(), String> {
         centre: (0.0, 0.0),
         radius: 300.0,
         angle: 0.0,
-        rotation_speed: 0.001
+        rotation_speed: -0.001
     };
-    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e12, 50.0, None);
-    initialise_planet(&mut world, FPoint::new(0.0,-100.0), 6e10, 20.0, None);
-    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e10, 20.0, Some(rail));
-    initialise_planet(&mut world, FPoint::new(0.0,0.0), 2e10, 10.0, Some(rail2));
+    let inner_rail = OrbitalPath {
+        centre: (0.0,0.0),
+        radius: 50.0,
+        angle: 0.0,
+        rotation_speed: 0.01
+    };
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e12, 50.0, vec![]);
+    initialise_planet(&mut world, FPoint::new(0.0,-100.0), 6e10, 20.0, vec![]);
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e10, 20.0, vec![rail.clone()]);
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 2e10, 10.0, vec![rail2]);
+    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e8, 5.0, vec![rail.clone(), inner_rail]);
 
     let vertices = vec![
         FPoint::new(-10.0, -10.0),
@@ -132,11 +137,13 @@ fn main() -> Result<(), String> {
         FPoint::new(10.0, 10.0),
         FPoint::new(10.0, -10.0),
     ];
-   initialise_free_body(&mut world, FPoint::new(175.0,0.0), 1e5, vertices, (0.0, 1.0));
+   initialise_free_body(&mut world, FPoint::new(175.0,0.0), 1e5, &vertices, (0.0, 1.0));
+   initialise_free_body(&mut world, FPoint::new(175.0,175.0), 1e5, &vertices, (-1.0, 1.0));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
-    let mut count = 0;
+    //let mut timestamp = SystemTime::now().duration_since(UNIX_EPOCH).expect("Uh OH");
+    let mut timestamp = SystemTime::now();
 
     'running: loop {
         // handling events
@@ -177,8 +184,12 @@ fn main() -> Result<(), String> {
         i = (i + 1) % 255;
         dispatcher.dispatch(&mut world);
         world.maintain();
-        count += 1;
-        println!("{}", count);
+
+        let currentTime = SystemTime::now().duration_since(timestamp).expect("time went backwards");
+        println!("{}", 1000 / currentTime.as_millis());
+        timestamp = SystemTime::now();
+
+        
 
         // Render
        renderer::render(&mut canvas, Color::RGB(i, 64, 255 - i), world.system_data())?;

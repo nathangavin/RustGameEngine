@@ -9,7 +9,7 @@ impl<'a> System<'a> for Physics {
     ReadStorage<'a, Mass>,
     ReadStorage<'a, CelestialBody>,
     ReadStorage<'a, Position>,
-    ReadStorage<'a, OrbitalPath>,
+    ReadStorage<'a, OrbitalPaths>,
     WriteStorage<'a, Velocity>,
     ReadStorage<'a, Polygon>,
     WriteStorage<'a, Acceleration>,
@@ -38,9 +38,14 @@ impl<'a> System<'a> for Physics {
             }   
 
             // sum for bodies on orbital rail paths
-            for (third_mass,  rail) in (&data.0, &data.3).join() {
-                let third_x = rail.centre.0 + rail.radius * rail.angle.cos();
-                let third_y = rail.centre.1 + rail.radius * rail.angle.sin();
+            for (third_mass,  rails) in (&data.0, &data.3).join() {
+                let mut third_x = 0.0;
+                let mut third_y = 0.0;
+                for rail in rails.0.as_slice() {
+                    third_x += rail.centre.0 + rail.radius * rail.angle.cos();
+                    third_y += rail.centre.1 + rail.radius * rail.angle.sin();
+
+                }
                 
                 let diff_x = third_x - position.0.x;
                 let diff_y = third_y - position.0.y;
@@ -55,7 +60,7 @@ impl<'a> System<'a> for Physics {
                 summed_gravity_force.0 += g_force_x;
                 summed_gravity_force.1 += g_force_y;
             }
-
+            
             let accel_x = summed_gravity_force.0 / mass.0;
             let accel_y = summed_gravity_force.1 / mass.0;
 
