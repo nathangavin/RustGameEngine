@@ -16,9 +16,9 @@ use specs::prelude::*;
 
 use crate::components::*;
 
-pub enum MovementCommand {
-    Stop,
-    Move(Direction),
+pub enum ScaleCommand {
+    Reduce,
+    Increase
 }
 
 fn direction_spreadsheet_row(direction: Direction) -> i32 {
@@ -86,7 +86,7 @@ fn main() -> Result<(), String> {
     let texture_creator = canvas.texture_creator();
 
     let mut dispatcher = DispatcherBuilder::new()
-        //.with(keyboard::Keyboard, "Keyboard", &[])
+        .with(keyboard::Keyboard, "Keyboard", &[])
         //.with(ai::AI, "AI", &[])
         //.with(physics::Physics, "Physics", &["Keyboard", "AI"])
         .with(physics::Physics, "Physics", &[])
@@ -97,8 +97,12 @@ fn main() -> Result<(), String> {
     dispatcher.setup(&mut world);
     renderer::SystemData::setup(&mut world);
 
-    let movement_command: Option<MovementCommand> = None;
-    world.insert(movement_command);
+    let scale_command : Option<ScaleCommand> = None;
+    world.insert(scale_command);
+
+    world.create_entity()
+        .with(Scale(0))
+        .build();
 
     /*
     let textures = [
@@ -109,13 +113,13 @@ fn main() -> Result<(), String> {
 
     let rail = OrbitalPath {
         centre: (0.0, 0.0),
-        radius: 200.0,
+        radius: 1000.0,
         angle: 0.0,
         rotation_speed: 0.002
     };
     let rail2 = OrbitalPath {
         centre: (0.0, 0.0),
-        radius: 300.0,
+        radius: 1200.0,
         angle: 0.0,
         rotation_speed: -0.001
     };
@@ -125,8 +129,11 @@ fn main() -> Result<(), String> {
         angle: 0.0,
         rotation_speed: 0.01
     };
-    initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e12, 50.0, vec![]);
-    initialise_planet(&mut world, FPoint::new(0.0,-100.0), 6e10, 20.0, vec![]);
+    let cos_30 = (1_f32 / 12_f32).cos();
+    let sin_30 = (1_f32 / 12_f32).sin();
+    initialise_planet(&mut world, FPoint::new(0.0,-200.0), 6e12, 50.0, vec![]);
+    initialise_planet(&mut world, FPoint::new(-200.0 * cos_30,200.0 * sin_30), 6e12, 50.0, vec![]);
+    initialise_planet(&mut world, FPoint::new(200.0 * cos_30,200.0 * sin_30), 6e12, 50.0, vec![]);
     initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e10, 20.0, vec![rail.clone()]);
     initialise_planet(&mut world, FPoint::new(0.0,0.0), 2e10, 10.0, vec![rail2]);
     initialise_planet(&mut world, FPoint::new(0.0,0.0), 6e8, 5.0, vec![rail.clone(), inner_rail]);
@@ -137,8 +144,8 @@ fn main() -> Result<(), String> {
         FPoint::new(10.0, 10.0),
         FPoint::new(10.0, -10.0),
     ];
-   initialise_free_body(&mut world, FPoint::new(175.0,0.0), 1e5, &vertices, (0.0, 1.0));
-   initialise_free_body(&mut world, FPoint::new(175.0,175.0), 1e5, &vertices, (-1.0, 1.0));
+   initialise_free_body(&mut world, FPoint::new(1000.0,0.0), 1e5, &vertices, (0.0, 1.0));
+   initialise_free_body(&mut world, FPoint::new(1100.0,100.0), 1e5, &vertices, (-1.0, 1.0));
 
     let mut event_pump = sdl_context.event_pump()?;
     let mut i = 0;
@@ -148,7 +155,7 @@ fn main() -> Result<(), String> {
     'running: loop {
         // handling events
 
-        let mut movement_command: Option<MovementCommand> = None;
+        let mut scale_command: Option<ScaleCommand> = None;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -156,37 +163,30 @@ fn main() -> Result<(), String> {
                 Event::KeyDown { keycode: Some(Keycode::Escape), ..} => {
                     break 'running;
                 },
-                Event::KeyDown { keycode: Some(Keycode::Left), ..} => {
-                    movement_command = Some(MovementCommand::Move(Direction::Left));
+                Event::KeyDown { keycode: Some(Keycode::UP), ..} => {
+                    scale_command = Some(ScaleCommand::Increase);
                 },
-                Event::KeyDown { keycode: Some(Keycode::Right), ..} => {
-                    movement_command = Some(MovementCommand::Move(Direction::Right));
+                Event::KeyDown { keycode: Some(Keycode::DOWN), ..} => {
+                    scale_command = Some(ScaleCommand::Reduce);
                 },
-                Event::KeyDown { keycode: Some(Keycode::Up), ..} => {
-                    movement_command = Some(MovementCommand::Move(Direction::Up));
-                },
-                Event::KeyDown { keycode: Some(Keycode::Down), ..} => {
-                    movement_command = Some(MovementCommand::Move(Direction::Down));
-                },
-                Event::KeyUp { keycode: Some(Keycode::Left), repeat: false, ..} |
-                Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, ..} |
-                Event::KeyUp { keycode: Some(Keycode::Up), repeat: false, ..} |
-                Event::KeyUp { keycode: Some(Keycode::Down), repeat: false, ..} => {
-                    movement_command = Some(MovementCommand::Stop);
+                Event::KeyUp { keycode: Some(Keycode::UP), repeat: false, ..} |
+                Event::KeyUp { keycode: Some(Keycode::DOWN), repeat: false, ..} => {
+                    scale_command = None;
                 },
                 _ => {}
             }
         }
 
-        *world.write_resource() = movement_command;
+        *world.write_resource() = scale_command;
+
 
         // Update
         i = (i + 1) % 255;
         dispatcher.dispatch(&mut world);
         world.maintain();
 
-        let currentTime = SystemTime::now().duration_since(timestamp).expect("time went backwards");
-        println!("{}", 1000 / currentTime.as_millis());
+        let current_time = SystemTime::now().duration_since(timestamp).expect("time went backwards");
+        //println!("{}", 1000 / current_time.as_millis());
         timestamp = SystemTime::now();
 
         

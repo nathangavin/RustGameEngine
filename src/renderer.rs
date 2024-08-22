@@ -17,6 +17,7 @@ pub type SystemData<'a> = (
     ReadStorage<'a, Polygon>,
     ReadStorage<'a, Acceleration>,
     ReadStorage<'a, Forces>,
+    ReadStorage<'a, Scale>,
 );
 
 pub fn render(
@@ -30,49 +31,45 @@ pub fn render(
 
         let (width, height) = canvas.output_size()?;
 
-        /*
-        for (pos, sprite) in (&data.0, &data.1).join() {
-            let current_frame = sprite.region;
-
-            let screen_position = pos.0 + Point::new(width as i32 / 2, height as i32 / 2);
-            let screen_rect = Rect::from_center(screen_position, 
-                                                        current_frame.width(), 
-                                                        current_frame.height());
-            canvas.copy(&textures[sprite.spritesheet], current_frame, screen_rect)?;
-        }
-        */
-
         let half_width = width as f32 / 2.0;
         let half_height = height as f32 / 2.0;
 
+        let mut calculated_scale = 1.0; 
+        for scale in (&data.8).join() {
+            calculated_scale = 2_f32.powi(scale.0);
+        }
+
         // draw fixed bodies
         for (cbody, fixed_pos) in (&data.1, &data.2).join() {
-            let screen_position = FPoint::new(fixed_pos.0.x + half_width, 
-                                    fixed_pos.0.y + half_height);
-            draw_circle(canvas, screen_position, cbody.radius, 100).unwrap();
+            let scaled_x = fixed_pos.0.x * calculated_scale;
+            let scaled_y = fixed_pos.0.y * calculated_scale;
+            let screen_position = FPoint::new(scaled_x + half_width, 
+                                    scaled_y + half_height);
+            let scaled_radius = cbody.radius * calculated_scale;
+            draw_circle(canvas, screen_position, scaled_radius, 100).unwrap();
         }
 
         // draw bodies on rails
         for (cbody, rails) in (&data.1, &data.3).join() {
             let mut body_position = FPoint::new(half_width, half_height);
             for rail in rails.0.as_slice() {
-                body_position.x += rail.centre.0 + (rail.radius * rail.angle.cos());
-                body_position.y += rail.centre.1 + (rail.radius * rail.angle.sin());
+                body_position.x += (rail.centre.0 + (rail.radius * rail.angle.cos())) * calculated_scale;
+                body_position.y += (rail.centre.1 + (rail.radius * rail.angle.sin())) * calculated_scale;
             }
-
-            draw_circle(canvas, body_position, cbody.radius, 100).unwrap();
+            let scaled_radius = cbody.radius * calculated_scale;
+            draw_circle(canvas, body_position, scaled_radius, 100).unwrap();
         }
 
         // draw free bodies
         for (pos, polygon, acceleration, forces) in (&data.2, &data.5, &data.6, &data.7).join() {
             let mut f_points = vec![FPoint::new(0.0,0.0); polygon.0.len() + 1];
             for (i,point) in polygon.0.iter().enumerate() {
-                f_points[i].x = half_width + pos.0.x + point.x;
-                f_points[i].y = half_height + pos.0.y + point.y;
+                f_points[i].x = half_width + (pos.0.x + point.x) * calculated_scale;
+                f_points[i].y = half_height + (pos.0.y + point.y) * calculated_scale;
             } 
             
-            f_points[polygon.0.len()].x = half_width + pos.0.x + polygon.0[0].x;
-            f_points[polygon.0.len()].y = half_height + pos.0.y + polygon.0[0].y;
+            f_points[polygon.0.len()].x = half_width + (pos.0.x + polygon.0[0].x) * calculated_scale;
+            f_points[polygon.0.len()].y = half_height + (pos.0.y + polygon.0[0].y) * calculated_scale;
 
             canvas.draw_flines(f_points.as_slice()).unwrap();
             
@@ -80,12 +77,11 @@ pub fn render(
             for force in forces.0.as_slice() {
                 canvas.draw_fline(
                             FPoint::new(
-                                half_width + pos.0.x, 
-                                half_height + pos.0.y),
+                                half_width + pos.0.x * calculated_scale, 
+                                half_height + pos.0.y * calculated_scale),
                             FPoint::new(
-                                half_width + pos.0.x + (10.0 * force.0),
-                                half_height + pos.0.y + (10.0 * force.1))).unwrap();
-
+                                half_width + (pos.0.x + (10.0 * force.0)) * calculated_scale,
+                                half_height + (pos.0.y + (10.0 * force.1)) * calculated_scale)).unwrap();
             }
         }
 

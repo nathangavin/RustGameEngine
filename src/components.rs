@@ -10,11 +10,6 @@ pub enum Direction {
     Right,
 }
 
-pub struct FDirection(pub (f32, f32));
-impl Component for FDirection {
-    type Storage = VecStorage<Self>;
-}
-
 #[derive(Default, Debug)]
 pub struct KeyboardControlled;
 impl Component for KeyboardControlled {
@@ -40,6 +35,11 @@ impl Component for Velocity {
     type Storage = VecStorage<Self>;
 }
 */
+
+pub struct Scale(pub i32);
+impl Component for Scale {
+    type Storage = VecStorage<Self>;
+}
 
 pub struct Mass(pub f32);
 impl Component for Mass {

@@ -1,37 +1,28 @@
 use specs::prelude::*;
 
-use crate::components::*;
+use crate::{components::*, ScaleCommand};
 
-use super::MovementCommand;
-
-const PLAYER_MOVEMENT_SPEED: i32 = 20;
+const SCALE_STEP : i32 = 1;
 
 pub struct Keyboard;
 
-/*
 impl<'a> System<'a> for Keyboard {
     type SystemData = (
-        ReadExpect<'a, Option<MovementCommand>>,
-        ReadStorage<'a, KeyboardControlled>,
-        WriteStorage<'a, Velocity>
+        ReadExpect<'a, Option<ScaleCommand>>,
+        WriteStorage<'a, Scale>
     );
 
     fn run(&mut self, mut data: Self::SystemData) {
-        
-        let movement_command = match &*data.0 {
-            Some(movement_command) => movement_command,
+        let scale_command = match &*data.0 {
+            Some(scale_command) => scale_command,
             None => return,
         };
 
-        for (_, vel) in (&data.1, &mut data.2).join() {
-            match movement_command {
-                &MovementCommand::Move(direction) => {
-                    vel.speed = PLAYER_MOVEMENT_SPEED;
-                    vel.direction = direction;
-                },
-                MovementCommand::Stop => vel.speed = 0
+        for scale in (&mut data.1).join() {
+            match scale_command {
+                ScaleCommand::Reduce => {scale.0 = scale.0 - SCALE_STEP},
+                ScaleCommand::Increase => {scale.0 = scale.0 + SCALE_STEP}
             }
         }
     }
 }
-*/
